@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>new yawk</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ Top bar: wordmark · subway-line nav · NYC clock ============ -->
+<header class="topbar" id="topbar">
+  <a class="wordmark" href="#top">new yawk</a>
+
+  <nav class="lines" aria-label="Sections">
+    <div class="line" style="--c: var(--red)">
+      <a class="bullet" href="#places" data-tab="food" aria-label="Food"><span>1</span></a>
+      <span class="label">Food</span>
+      <ul class="stops">
+        <li><a href="#places" data-tab="food">All food</a></li>
+        <li><a href="#places" data-tab="food" data-category="Café">Cafés</a></li>
+        <li><a href="#places" data-tab="food" data-category="Dessert">Dessert</a></li>
+        <li><a href="#places" data-tab="food" data-category="Restaurant">Restaurants</a></li>
+        <li><a href="#places" data-tab="food" data-category="Bar">Bars</a></li>
+      </ul>
+    </div>
+    <div class="line" style="--c: var(--red)">
+      <a class="bullet" href="#places" data-tab="event" aria-label="Events"><span>2</span></a>
+      <span class="label">Events</span>
+      <ul class="stops">
+        <li><a href="#places" data-tab="event">All events</a></li>
+        <li><a href="#places" data-tab="all">Everything</a></li>
+      </ul>
+    </div>
+    <div class="line" style="--c: var(--red)">
+      <a class="bullet" href="#schedule" aria-label="Schedule"><span>3</span></a>
+      <span class="label">Schedule</span>
+      <ul class="stops" id="nav-days">
+        <li><a href="#schedule">Set trip dates</a></li>
+      </ul>
+    </div>
+    <div class="line" style="--c: var(--green)">
+      <a class="bullet" href="#places" data-add="food" aria-label="Add"><span>4</span></a>
+      <span class="label">Add</span>
+      <ul class="stops">
+        <li><a href="#places" data-add="food">Add food</a></li>
+        <li><a href="#places" data-add="event">Add an event</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="clock" title="Time in New York">
+    <span class="clock-city">NYC</span>
+    <span id="clock-time">--:--</span>
+    <span id="clock-date"></span>
+  </div>
+</header>
+
+<!-- ============ Hero ============ -->
+<section id="top" class="hero">
+  <canvas id="hero" aria-label="I love NY logo made of particles"></canvas>
+  <a class="scroll-cue" href="#places">i'm walkin here ↓</a>
+</section>
+
+<main>
+  <!-- ============ 1 + 2: Food & Events ============ -->
+  <section id="places" class="section">
+    <h2 class="sign"><span class="b">1</span><span class="b">2</span>Food &amp; Events</h2>
+
+    <div class="toolbar">
+      <div class="seg" id="kind-tabs" role="tablist">
+        <button type="button" data-kind="all">All</button>
+        <button type="button" data-kind="food">Food</button>
+        <button type="button" data-kind="event">Events</button>
+      </div>
+      <select id="f-hood" aria-label="Neighborhood"></select>
+      <select id="f-cuisine" aria-label="Cuisine"></select>
+      <select id="f-cat" aria-label="Type"></select>
+      <button type="button" class="btn primary push" data-add="food">+ Add a spot</button>
+    </div>
+
+    <div class="split">
+      <ul id="place-list" class="cards"></ul>
+      <div class="map-wrap">
+        <div id="map" class="map"></div>
+        <p class="legend"><span class="pin food"></span>food <span class="pin event"></span>event</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3: Schedule ============ -->
+  <section id="schedule" class="section">
+    <h2 class="sign"><span class="b">3</span>Schedule</h2>
+
+    <div class="trip-dates">
+      <label>Arrive <input type="date" id="trip-start"></label>
+      <label>Leave <input type="date" id="trip-end"></label>
+      <span class="hint" id="trip-msg"></span>
+    </div>
+
+    <div class="days" id="days" role="tablist" aria-label="Trip days"></div>
+
+    <div class="split">
+      <div id="day-detail" class="day-detail"></div>
+      <div class="map-wrap"><div id="day-map" class="map"></div></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">made for two · <span class="b small">♥</span> · new york city</footer>
+
+<!-- ============ Add a spot ============ -->
+<dialog id="add-dialog">
+  <form id="add-form" data-kind="food">
+    <h2 class="sign small"><span class="b green">4</span>Add a spot</h2>
+
+    <div class="seg" id="add-kind">
+      <label><input type="radio" name="kind" value="food" checked> Food</label>
+      <label><input type="radio" name="kind" value="event"> Event</label>
+    </div>
+
+    <label>Name <input name="name" required autocomplete="off"></label>
+    <div class="row">
+      <label>Type <input name="category" list="cat-food" autocomplete="off" placeholder="Café, Dessert…"></label>
+      <label class="food-only">Cuisine <input name="cuisine" list="cuisines" autocomplete="off" placeholder="Italian, Thai…"></label>
+    </div>
+    <div class="row event-only">
+      <label>Date <input type="date" name="event_date"></label>
+      <label>Time <input type="time" name="event_time"></label>
+    </div>
+
+    <label>Address
+      <span class="inline">
+        <input name="address" autocomplete="off" placeholder="Street address or place name">
+        <button type="button" class="btn small" id="geo-btn">Find</button>
+      </span>
+    </label>
+    <p class="hint" id="geo-status">Find the address, or click the map to drop a pin.</p>
+    <div id="pick-map" class="map small"></div>
+
+    <div class="row">
+      <label>Neighborhood <input name="neighborhood" list="hoods" autocomplete="off"></label>
+      <label>Link <input name="url" type="url" placeholder="https://"></label>
+    </div>
+    <label>Notes <textarea name="notes" rows="2"></textarea></label>
+    <input type="hidden" name="lat"><input type="hidden" name="lng">
+
+    <p class="error" id="add-error"></p>
+    <div class="actions">
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ============ Add to schedule ============ -->
+<dialog id="sched-dialog">
+  <form id="sched-form">
+    <h2 class="sign small"><span class="b">3</span>Add to schedule</h2>
+    <p class="sched-name" id="sched-name"></p>
+    <div class="row">
+      <label>Day <span id="sched-day-field"></span></label>
+      <label>Time <input type="time" name="time"></label>
+    </div>
+    <label>Note <input name="note" autocomplete="off" placeholder="Reservation at 7, get the cacio e pepe…"></label>
+    <input type="hidden" name="place_id">
+    <p class="error" id="sched-error"></p>
+    <div class="actions">
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Add</button>
+    </div>
+  </form>
+</dialog>
+
+<datalist id="cat-food">
+  <option>Restaurant</option><option>Café</option><option>Dessert</option><option>Bakery</option>
+  <option>Bar</option><option>Pizza</option><option>Brunch</option><option>Street food</option>
+</datalist>
+<datalist id="cat-event">
+  <option>Show</option><option>Museum</option><option>Concert</option><option>Sight</option>
+  <option>Tour</option><option>Market</option><option>Sports</option><option>Nightlife</option>
+</datalist>
+<datalist id="cuisines">
+  <option>American</option><option>Italian</option><option>Pizza</option><option>Japanese</option>
+  <option>Chinese</option><option>Korean</option><option>Thai</option><option>Mexican</option>
+  <option>French</option><option>Jewish deli</option><option>Indian</option><option>Mediterranean</option>
+</datalist>
+<datalist id="hoods">
+  <option>West Village</option><option>East Village</option><option>SoHo</option><option>Lower East Side</option>
+  <option>Chinatown</option><option>Tribeca</option><option>Chelsea</option><option>Midtown</option>
+  <option>Upper West Side</option><option>Upper East Side</option><option>Harlem</option><option>Financial District</option>
+  <option>Williamsburg</option><option>DUMBO</option><option>Greenpoint</option><option>Bushwick</option>
+  <option>Park Slope</option><option>Astoria</option><option>Long Island City</option><option>Flushing</option>
+</datalist>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="hero.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

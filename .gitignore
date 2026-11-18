@@ -1,0 +1,4 @@
+node_modules/
+trip.db
+trip.db-*
+.DS_Store
